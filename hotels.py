@@ -1,4 +1,4 @@
-from fastapi import Query, APIRouter
+from fastapi import Body, Query, APIRouter
 
 from schemas.hotels import Hotel, HotelPatch
 
@@ -8,6 +8,11 @@ router = APIRouter(prefix="/hotels", tags=["Отели"])
 hotels = [
     {"id": 1, "title": "Sochi", "name": "sochi"},
     {"id": 2, "title": "Дубай", "name": "dubai"},
+    {"id": 3, "title": "Мальдивы", "name": "maldivi"},
+    {"id": 4, "title": "Геленджик", "name": "gelendzhik"},
+    {"id": 5, "title": "Москва", "name": "moscow"},
+    {"id": 6, "title": "Казань", "name": "kazan"},
+    {"id": 7, "title": "Санкт-Петербург", "name": "spb"},
 ]
 
 
@@ -15,6 +20,8 @@ hotels = [
 def get_hotels(
         id: int | None = Query(None, description="Айдишник"),
         title: str | None = Query(None, description="Название отеля"),
+        page: int = 1,
+        per_page: int = 3,
 ):
     hotels_ = []
     for hotel in hotels:
@@ -23,12 +30,22 @@ def get_hotels(
         if title and hotel["title"] != title:
             continue
         hotels_.append(hotel)
-    return hotels_
+    return hotels_[(per_page*page-per_page):(per_page*page)]
 
 
 
 @router.post("")
-def create_hotel(hotel_data: Hotel):
+def create_hotel(hotel_data: Hotel = Body(openapi_examples={
+    "1": {"summary": "Сочи", 'value': {
+        "title": "Hotel Sochi 5 stars u morya",
+        "name": "sochi_u_morya",
+    }},
+    "2": {"summary": "Dubai", 'value': {
+        "title": "Hotel Dubai fountain",
+        "name": "dubai_fountain",
+    }},
+    })
+):
     global hotels
     hotels.append({
         "id": hotels[-1]["id"] + 1,
